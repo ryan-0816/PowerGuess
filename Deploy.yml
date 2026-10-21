@@ -1,0 +1,42 @@
+
+---
+- name: PowerGuess
+  hosts: windows
+  gather_facts: false
+
+  vars:
+    tool_source: "{{ playbook_dir }}/AnnoyanceTool.ps1"
+    tool_destination: 'C:\ProgramData\AnnoyanceTool.ps1'
+    target_user: 'x'
+    profile_path: 'C:\Users\{{ target_user }}\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1'
+    profile_line: '. "C:\ProgramData\AnnoyanceTool.ps1"'
+
+  tasks:
+    - name: Create PowerShell profile directory
+      ansible.windows.win_file:
+        path: 'C:\Users\{{ target_user }}\Documents\WindowsPowerShell'
+        state: directory
+
+    - name: Deploy annoyance tool
+      ansible.windows.win_copy:
+        src: "{{ tool_source }}"
+        dest: "{{ tool_destination }}"
+
+    - name: Ensure PowerShell profile exists
+      ansible.windows.win_file:
+        path: "{{ profile_path }}"
+        state: touch
+
+    - name: Add tool to PowerShell profile
+      ansible.windows.win_lineinfile:
+        path: "{{ profile_path }}"
+        line: "{{ profile_line }}"
+        state: present
+        create: true
+
+    - name: Display deployment result
+      ansible.builtin.debug:
+        msg: >-
+          AnnoyanceTool deployed to {{ tool_destination }}.
+          Profile configured at {{ profile_path }}.
+          Restart PowerShell to test.
