@@ -1,39 +1,48 @@
 # PowerGuess.ps1
-# Author: Ryan Tagen
 # CSEC-473 Cyber Defense Techniques
-# Interrupts a PowerShell session with occasional number challenges
+# Interactive command-counting demonstration
 
-$global:AnnoyanceCommandCount = 0
+$ErrorActionPreference = "Continue"
+$count = 0
+$limit = 10
 
-# save the prompt that was already configured.
-$global:AnnoyanceOriginalPrompt = (Get-Command prompt -CommandType Function -ErrorAction SilentlyContinue).ScriptBlock
+Write-Host "GuessAndCheck started. Type 'exit' to quit." -ForegroundColor Cyan
 
-function global:prompt {
-    # count commands
-    $global:AnnoyanceCommandCount++
+while ($true) {
+    $command = Read-Host "PS $((Get-Location).Path)>"
 
-    # activate when count is 10
-    if ($global:AnnoyanceCommandCount -ge 10) {
-        $global:AnnoyanceCommandCount = 0
+    if ([string]::IsNullOrWhiteSpace($command)) {
+        continue
+    }
 
-        # pick random number 1-10
+    if ($command -eq "exit") {
+        Write-Host "67" -ForegroundColor Red
+        continue
+    }
+
+    $count++
+
+    if ($count -ge $limit) {
+        $count = 0
         $secret = Get-Random -Minimum 1 -Maximum 11
-        $answer = Read-Host "Guess a number from 1 to 10!"
 
-        # see if guess matches number
-        if ($answer -notmatch '^(10|[1-9])$' -or [int]$answer -ne $secret) {
-            Write-Host "Incorrect! Closing this PowerShell session." -ForegroundColor Red
-            # if not, exit
-            exit
+        Write-Host "Guess a number from 1 to 10!" -ForegroundColor Red
+        $answer = Read-Host
+
+        if ($answer -notmatch '^(10|[1-9])$' -or
+            [int]$answer -ne $secret) {
+            Write-Host "Wrong! Closing PowerShell." -ForegroundColor Red
+            Start-Sleep -Seconds 1
+            Stop-Process -Id $PID
         }
 
-        # if correct, keep working
         Write-Host "Correct! Continue working." -ForegroundColor Green
     }
 
-    if ($global:AnnoyanceOriginalPrompt) {
-        & $global:AnnoyanceOriginalPrompt
-    } else {
-        "PS $($executionContext.SessionState.Path.CurrentLocation)> "
+    try {
+        Invoke-Expression $command
+    }
+    catch {
+        Write-Host $_ -ForegroundColor Red
     }
 }
