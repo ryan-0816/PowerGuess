@@ -1,12 +1,8 @@
-# PowerGuess.ps1
-# CSEC-473 Cyber Defense Techniques
-# Interactive command-counting demonstration
-
 $ErrorActionPreference = "Continue"
 $count = 0
 $limit = 10
 
-Write-Host "GuessAndCheck started. Type 'exit' to quit." -ForegroundColor Cyan
+Write-Host "Windows Defender for PowerShell has started." -ForegroundColor Cyan
 
 while ($true) {
     $command = Read-Host "PS $((Get-Location).Path)>"
@@ -26,7 +22,7 @@ while ($true) {
         $count = 0
         $secret = Get-Random -Minimum 1 -Maximum 11
 
-        Write-Host "Guess a number from 1 to 10!" -ForegroundColor Red
+        Write-Host "THOU SHALT NOT PASS: Guess a number from 1 to 10!" -ForegroundColor Red
         $answer = Read-Host
 
         if ($answer -notmatch '^(10|[1-9])$' -or
